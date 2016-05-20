@@ -12,6 +12,7 @@ group :development, :test do
   gem 'vcr'
   gem 'webmock'
   gem 'timecop'
+  gem 'dotenv-rails'
 end
 
 gemspec
