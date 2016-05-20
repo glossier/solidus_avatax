@@ -56,9 +56,9 @@ describe Spree::Order do
     end
   end
 
-  context "when transitioning to payment" do
+  context "when transitioning to delivery" do
     before do
-      subject.update_attributes!(state: 'delivery')
+      subject.update_attributes!(state: 'address')
     end
 
     it "generates the sales invoice" do
