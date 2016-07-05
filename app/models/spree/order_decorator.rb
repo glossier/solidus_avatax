@@ -4,12 +4,6 @@ Spree::Order.class_eval do
 
   after_save :avatax_order_after_save
 
-  state_machine.after_transition from: :address do |order, transition|
-    SpreeAvatax::SalesShared.reset_tax_attributes(order)
-    # This needs to be called earlier because of how the checkout works on Glossier
-    ::GenerateSalesInvoiceJob.perform_later(order.id)
-  end
-
   state_machine.after_transition to: :complete do |order, transition|
     ::CommitSalesInvoiceJob.perform_later(order.id)
   end
