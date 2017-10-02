@@ -30,6 +30,7 @@ module SpreeAvatax
 
       def self.prepended(base)
         base.validate :avatax_there_can_be_only_one, on: :create
+        base.delegate :avatax?, to: :calculator
 
         class << base
           prepend ClassMethods
@@ -41,10 +42,6 @@ module SpreeAvatax
           # We've overridden the class-level TaxRate.adjust so nothing should be calling this code
           raise SpreeAvatax::TaxRateInvalidOperation.new("Spree::TaxRate#adjust should never be called when Avatax is present")
         end
-      end
-
-      def avatax?
-        calculator.avatax?
       end
 
       private
