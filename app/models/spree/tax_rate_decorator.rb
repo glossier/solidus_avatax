@@ -41,6 +41,8 @@ module SpreeAvatax
         if self.avatax?
           # We've overridden the class-level TaxRate.adjust so nothing should be calling this code
           raise SpreeAvatax::TaxRateInvalidOperation.new("Spree::TaxRate#adjust should never be called when Avatax is present")
+        else
+          super
         end
       end
 
