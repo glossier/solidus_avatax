@@ -25,6 +25,8 @@ module SpreeAvatax::Shared
     end
 
     def taxable_order?(order)
+      return false if order.pos_order?
+      return false unless order.store.country.iso =~ /(US|CA)/
       order.line_items.present? && order.ship_address.present?
     end
 
