@@ -11,7 +11,7 @@ module SpreeAvatax
         end
 
         base.state_machine.after_transition to: :complete do |order, transition|
-          ::CommitSalesInvoiceJob.perform_later(order.id)
+          ::CommitSalesInvoiceJob.perform_later(order.id) if order.any_avatax_adjustments?
         end
 
         base.state_machine.after_transition to: :canceled do |order, transition|
@@ -37,6 +37,10 @@ module SpreeAvatax
           Rails.logger.info "[avatax] order address change detected for order #{number} while in confirm state. resetting order state to 'payment'."
           update_columns(state: 'payment', updated_at: Time.now)
         end
+      end
+
+      def any_avatax_adjustments?
+        all_adjustments.tax.avatax.any?
       end
 
       def pos_order?
