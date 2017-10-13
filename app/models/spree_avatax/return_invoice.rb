@@ -31,7 +31,7 @@ class SpreeAvatax::ReturnInvoice < ActiveRecord::Base
     # After the reimbursement completes the ".finalize" method will get called and we'll commit the
     #   return invoice.
     def generate(reimbursement)
-      if !SpreeAvatax::Config.enabled || !reimbursement.order.store.country.iso =~ /(US|CA)/
+      if !SpreeAvatax::Config.enabled || !north_american_order?(reimbursement)
         logger.info("Avatax disabled. Skipping ReturnInvoice.generate for reimbursement #{reimbursement.number}")
         return
       end
@@ -90,6 +90,10 @@ class SpreeAvatax::ReturnInvoice < ActiveRecord::Base
     end
 
     private
+
+    def north_american_order?(reimbursement)
+      [1,2].include?(reimbursement.order.store_id)
+    end
 
     def get_tax(reimbursement)
       params = get_tax_params(reimbursement)
