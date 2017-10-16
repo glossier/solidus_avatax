@@ -82,14 +82,46 @@ describe Spree::Order do
   end
 
   context "when transitioning to complete" do
+    let(:sales_invoice_klass) { SpreeAvatax::SalesInvoice }
+
+    let!(:order) { create(:order_with_line_items, line_items_count: 2) }
+
+    before do
+      Spree::TaxRate.destroy_all
+
+      create(:tax_rate,
+             tax_category_id: Spree::TaxCategory.ids.first,
+             zone_id: subject.tax_zone.id,
+             calculator: calculator)
+
+      allow(sales_invoice_klass).to receive(:commit)
+    end
+
     before do
       subject.update_attributes!(state: 'confirm')
       subject.payments.create!(state: 'checkout')
+
+      VCR.use_cassette('sales_invoice_gettax_without_discounts', allow_playback_repeats: true) do
+        Spree::Tax::OrderAdjuster.new(subject).adjust!
+      end
     end
 
-    it "commits the sales invoice" do
-      expect(SpreeAvatax::SalesInvoice).to receive(:commit).with(subject)
-      subject.complete!
+    context "with an Avatax-calculated tax adjustment" do
+      let(:calculator) { create(:avatax_tax_calculator) }
+
+      it "commits the sales invoice" do
+        expect(sales_invoice_klass).to receive(:commit).with(subject)
+        subject.complete!
+      end
+    end
+
+    context "without an Avatax-calculated tax adjustment" do
+      let(:calculator) { create(:default_tax_calculator) }
+
+      it "doesn't commit the sales invoice" do
+        expect(sales_invoice_klass).to receive(:commit).never
+        subject.complete!
+      end
     end
   end
 
