@@ -36,27 +36,28 @@ describe Spree::TaxRate do
   end
 
   describe '#adjust' do
-    let(:order) { create(:order_with_line_items) }
-    let(:line_item) { order.line_items.first }
+    let(:order) { create(:order_with_line_items, line_items_count: 3) }
 
     before do
       allow(SpreeAvatax::SalesInvoice).to receive(:generate)
     end
 
-    context "when the only tax-rate is calculated by Avatax" do
-      subject(:adjust!) { tax_rate.adjust(order.tax_zone, line_item) }
+    subject(:adjust!) do
+      order.line_items.each do |line_item|
+        tax_rate.adjust(order.tax_zone, line_item)
+      end
+    end
 
-      it 'generates a sales invoice in Avalara' do
-        expect(SpreeAvatax::SalesInvoice).to receive(:generate).with(order)
+    context "when the only tax-rate is calculated by Avatax" do
+      it "doesn't generate a sales invoice in Avalara" do
+        expect(SpreeAvatax::SalesInvoice).to receive(:generate).never
 
         adjust!
       end
     end
 
     context "with another tax-rate not calculated by Avalara" do
-      let(:tax_rate_2) { create(:tax_rate, calculator: create(:default_tax_calculator)) }
-
-      subject(:adjust!) { tax_rate_2.adjust(order.tax_zone, line_item) }
+      let(:tax_rate) { create(:tax_rate, calculator: create(:default_tax_calculator)) }
 
       it "doesn't generate a sales invoice in Avalara" do
         expect(SpreeAvatax::SalesInvoice).to receive(:generate).never

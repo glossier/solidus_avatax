@@ -31,11 +31,9 @@ module SpreeAvatax
       end
 
       def adjust(order_tax_zone, item)
-        if self.avatax?
-          SpreeAvatax::SalesInvoice.generate(item.order)
-        else
-          super
-        end
+        return if self.avatax?
+
+        super
       end
 
       private

@@ -50,6 +50,8 @@ describe Spree::Order do
   end
 
   context "when transitioning from address" do
+    let!(:order) { create(:order_with_line_items, line_items_count: 2) }
+
     before do
       subject.update_attributes!(state: 'address')
     end
@@ -65,7 +67,7 @@ describe Spree::Order do
     end
 
     it "generates a sales invoice" do
-      expect(SpreeAvatax::SalesInvoice).to receive(:generate).with(order)
+      expect(SpreeAvatax::SalesInvoice).to receive(:generate).with(order).exactly(:once)
       subject.next!
     end
   end
