@@ -89,9 +89,22 @@ describe Spree::Order do
       subject.payments.create!(state: 'checkout')
     end
 
-    it "commits the sales invoice" do
-      expect(SpreeAvatax::SalesInvoice).to receive(:commit).with(subject)
-      subject.complete!
+    context "without a sales invoice" do
+      it "doesn't commit the sales invoice" do
+        expect(SpreeAvatax::SalesInvoice).to receive(:commit).with(subject).never
+        subject.complete!
+      end
+    end
+
+    context "with a sales invoice" do
+      before do
+        subject.avatax_sales_invoice = build(:avatax_sales_invoice)
+      end
+
+      it "commits the sales invoice" do
+        expect(SpreeAvatax::SalesInvoice).to receive(:commit).with(subject)
+        subject.complete!
+      end
     end
   end
 
