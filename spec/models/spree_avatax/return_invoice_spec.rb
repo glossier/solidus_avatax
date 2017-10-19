@@ -67,6 +67,11 @@ describe SpreeAvatax::ReturnInvoice do
       SpreeAvatax::ReturnInvoice.generate(reimbursement)
     end
 
+    before do
+      allow(order).to receive(:store_id).and_return(1)
+      allow(order).to receive(:avatax_sales_invoice).and_return(double)
+    end
+
     it 'creates a return invoice' do
       expect {
         subject
@@ -192,6 +197,10 @@ describe SpreeAvatax::ReturnInvoice do
 
     subject do
       SpreeAvatax::ReturnInvoice.finalize(return_invoice.reimbursement)
+    end
+
+    before do
+      create(:avatax_sales_invoice, order: return_invoice.reimbursement.order)
     end
 
     it 'marks the return invoice as committed' do
