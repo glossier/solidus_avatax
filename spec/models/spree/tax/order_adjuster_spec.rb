@@ -8,6 +8,7 @@ describe Spree::Tax::OrderAdjuster do
     Spree::TaxRate.destroy_all
 
     create(:tax_rate, zone: avatax_zone, calculator: create(:avatax_tax_calculator))
+    create(:tax_rate, zone: avatax_zone, calculator: create(:default_tax_calculator))
     create(:tax_rate, zone: non_avatax_zone, calculator: create(:default_tax_calculator))
   end
 
@@ -36,12 +37,6 @@ describe Spree::Tax::OrderAdjuster do
 
       it "generates a sales-invoice" do
         expect(sales_invoice_klass).to receive(:generate).exactly(:once)
-
-        adjuster.adjust!
-      end
-
-      it "does not invoke the item-adjuster service" do
-        expect(item_adjuster).to receive(:adjust!).never
 
         adjuster.adjust!
       end

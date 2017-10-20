@@ -70,6 +70,19 @@ describe Spree::Order do
       expect(SpreeAvatax::SalesInvoice).to receive(:generate).with(order).exactly(:once)
       subject.next!
     end
+
+    context "with an Avatax-calculated tax-rate and a non-Avatax-calculated tax-rate" do
+      before do
+        create(:tax_rate,
+               zone_id: subject.tax_zone.id,
+               calculator: create(:default_tax_calculator))
+      end
+
+      it "generates a sales invoice" do
+        expect(SpreeAvatax::SalesInvoice).to receive(:generate).with(order).exactly(:once)
+        subject.next!
+      end
+    end
   end
 
   context "when transitioning to payment" do

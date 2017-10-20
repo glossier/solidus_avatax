@@ -28,7 +28,8 @@ describe SpreeAvatax::SalesShared do
                order: order,
                label: 'Previous Tax',
                included: false,
-               finalized: true)
+               finalized: true,
+               source: Spree::TaxRate.avatax.first)
 
       line_item.update_attributes!({
         additional_tax_total: 1,
@@ -48,9 +49,24 @@ describe SpreeAvatax::SalesShared do
       end
     end
 
-    it 'should remove all eligible tax adjustments' do
-      subject
-      expect(line_item.adjustments.tax.count).to eq 0
+    it 'should remove all eligible Avatax adjustments' do
+      expect { subject }.to \
+        change { line_item.adjustments.tax.count }.to(0)
+    end
+
+    it "should not remove non-Avatax tax adjustments" do
+      line_item.adjustments.eligible.tax.additional << \
+        create(:tax_adjustment,
+               adjustable: line_item,
+               amount: 1.23,
+               order: order,
+               label: 'Previous Tax',
+               included: false,
+               finalized: true,
+               source: create(:tax_rate, calculator: create(:default_tax_calculator)))
+
+      expect { subject }.to \
+        change { line_item.adjustments.tax.count }.from(2).to(1)
     end
 
     context 'when a SalesInvoice record is present' do

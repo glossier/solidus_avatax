@@ -2,9 +2,15 @@ module SpreeAvatax
   module Extensions
     module OrderAdjuster
       def adjust!
-        return super unless rates_for_order_zone(order).all?(&:avatax?)
+        super
 
-        SpreeAvatax::SalesInvoice.generate(order)
+        SpreeAvatax::SalesInvoice.generate(order) if any_avatax_rates?
+      end
+
+      private
+
+      def any_avatax_rates?
+        rates_for_order_zone(order).any?(&:avatax?)
       end
     end
   end

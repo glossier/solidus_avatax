@@ -20,6 +20,10 @@ module SpreeAvatax
             where(source_type.not_eq('Spree::TaxRate').or source_type.eq(nil))
           end
         end
+
+        base.scope :avatax, -> do
+          base.where(source_id: Spree::TaxRate.avatax.ids)
+        end
       end
 
       private
