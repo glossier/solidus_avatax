@@ -50,6 +50,8 @@ describe Spree::Order do
   end
 
   context "when transitioning from address" do
+    let!(:order) { create(:order_with_line_items, line_items_count: 2) }
+
     before do
       subject.update_attributes!(state: 'address')
     end
@@ -65,8 +67,21 @@ describe Spree::Order do
     end
 
     it "generates a sales invoice" do
-      expect(SpreeAvatax::SalesInvoice).to receive(:generate).with(order)
+      expect(SpreeAvatax::SalesInvoice).to receive(:generate).with(order).exactly(:once)
       subject.next!
+    end
+
+    context "with an Avatax-calculated tax-rate and a non-Avatax-calculated tax-rate" do
+      before do
+        create(:tax_rate,
+               zone_id: subject.tax_zone.id,
+               calculator: create(:default_tax_calculator))
+      end
+
+      it "generates a sales invoice" do
+        expect(SpreeAvatax::SalesInvoice).to receive(:generate).with(order).exactly(:once)
+        subject.next!
+      end
     end
   end
 
@@ -87,9 +102,22 @@ describe Spree::Order do
       subject.payments.create!(state: 'checkout')
     end
 
-    it "commits the sales invoice" do
-      expect(SpreeAvatax::SalesInvoice).to receive(:commit).with(subject)
-      subject.complete!
+    context "without a sales invoice" do
+      it "doesn't commit the sales invoice" do
+        expect(SpreeAvatax::SalesInvoice).to receive(:commit).with(subject).never
+        subject.complete!
+      end
+    end
+
+    context "with a sales invoice" do
+      before do
+        subject.avatax_sales_invoice = build(:avatax_sales_invoice)
+      end
+
+      it "commits the sales invoice" do
+        expect(SpreeAvatax::SalesInvoice).to receive(:commit).with(subject)
+        subject.complete!
+      end
     end
   end
 

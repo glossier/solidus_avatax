@@ -109,7 +109,7 @@ module SpreeAvatax::SalesShared
         end
       end
 
-      destroyed_adjustments = order.all_adjustments.tax.destroy_all
+      destroyed_adjustments = order.all_adjustments.avatax.destroy_all
       return if destroyed_adjustments.empty?
 
       taxable_records = order.line_items + order.shipments
