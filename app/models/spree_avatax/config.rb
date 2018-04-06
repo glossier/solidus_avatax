@@ -25,10 +25,23 @@ module SpreeAvatax
         (config = active) ? config.enabled : true
       end
 
+      def customer_code
+        @customer_code || default_customer_code
+      end
+
+      def customer_code=(evaluator)
+        @customer_code = evaluator.respond_to?(:call) \
+          && evaluator || ->(_) { evaluator }
+      end
+
       private
 
       def active
         order(:id).last
+      end
+
+      def default_customer_code
+        ->(order) { order.email }
       end
     end
 

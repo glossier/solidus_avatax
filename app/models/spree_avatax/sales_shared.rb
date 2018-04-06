@@ -142,10 +142,12 @@ module SpreeAvatax::SalesShared
 
     # see https://github.com/avadev/AvaTax-Calc-SOAP-Ruby/blob/master/GetTaxTest.rb
     def gettax_params(order, doc_type)
+      config = SpreeAvatax::Config
+
       {
         doccode:       order.number,
-        customercode:  REXML::Text.normalize(order.email),
-        companycode:   SpreeAvatax::Config.company_code,
+        customercode:  REXML::Text.normalize(config.customer_code.call(order)),
+        companycode:   config.company_code,
 
         doctype: doc_type,
         docdate: Date.today,
