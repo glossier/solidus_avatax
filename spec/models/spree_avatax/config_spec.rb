@@ -15,16 +15,16 @@ RSpec.describe SpreeAvatax::Config do
       expect(order).to have_received(:email)
     end
 
-    it 'is be configured' do
+    it 'can be configured with a proc' do
       described_class.customer_code = ->(order) { order.number }
       described_class.customer_code.call(order)
 
       expect(order).to have_received(:number)
     end
 
-    it 'raises an exception if misconfigured' do
-      expect { described_class.customer_code = 'HARDCODED' }
-        .to raise_error SpreeAvatax::Config::Exception
+    it 'can be configured with a value' do
+      described_class.customer_code = 'value'
+      expect(described_class.customer_code.call(order)).to eq 'value'
     end
   end
 end

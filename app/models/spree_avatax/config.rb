@@ -2,8 +2,6 @@ module SpreeAvatax
   class Config < Spree::Base
     DEFAULT_TIMEOUT = 20
 
-    class Exception < RuntimeError; end
-
     class << self
       attr_accessor :username
       attr_accessor :password
@@ -32,9 +30,8 @@ module SpreeAvatax
       end
 
       def customer_code=(evaluator)
-        raise(Exception) unless evaluator.respond_to?(:call)
-
-        @customer_code = evaluator
+        @customer_code = evaluator.respond_to?(:call) \
+          && evaluator || ->(_) { evaluator }
       end
 
       private
